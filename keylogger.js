@@ -25,10 +25,11 @@ function keyup(event) {
 	var key = event.which || event.keyCode;
 	var latency = performance.now() - timer[key];
 	keys.push({"key": key, "time": timer[key], "latency": latency});
-	console.log("pressed "+key+"-"+String.fromCharCode(key)+" for "+latency+" seconds.");
-
+	if(inputing) {
+		console.log("pressed "+key+"-"+String.fromCharCode(key)+" for "+latency+" seconds.");
+	}
 	if(key == ENTER_KEY) {
-		console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		//console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
 		if(inputing) {
 			console.log("~~~ PASSWORD: "+password);
@@ -37,8 +38,9 @@ function keyup(event) {
 		}
 		if(password_latency.length == password.length * 2 - 1) {
 			letancies.push(password_latency);
-			console.log("~~~ LETANCY: "+password_latency);
-			console.log("~~~ LETANCIES: "+letancies);
+			console.log("~~~ PUSHED");
+			//console.log("~~~ LETANCY: "+password_latency);
+			//console.log("~~~ LETANCIES: "+letancies);
 		}
 		password_latency = [];
 		i = 0;
@@ -48,7 +50,8 @@ function keyup(event) {
 	}
 
 	if(key == BACKSPACE_KEY || i > password.length || key != password[i]) {
-		console.log("~~~ DUMPED LATENCY");
+		if(key != ENTER_KEY)
+			console.log("~~~ DUMPED LATENCY");
 		password_latency = [];
 		i = 0;
 	}
@@ -57,7 +60,7 @@ function keyup(event) {
 			var time_between = timer[key] - keys[keys.length - 2].time - keys[keys.length - 2].latency;
 			password_latency.push(time_between);
 		}
-		console.log("~~~ PUSHING LATENCY");
+		//console.log("~~~ PUSHING LATENCY");
 		password_latency.push(latency);
 		i++;
 	}
