@@ -17,7 +17,7 @@ def cost(net_result, answer, derivative=False):
         return 2 * (answer - net_result)
     return np.abs(np.power(net_result - answer, 2))
 
-DAMP = 0.05
+DAMP = 0.03
 NETWORK_SIZE = 2
 L = NETWORK_SIZE - 1
 LAYER_SIZE = [
@@ -77,8 +77,9 @@ for i in range(len(data)):
     ans = [0] * LAYER_SIZE[L]
     ans[data[i][0]] = 1
     answers[i] = ans
-
-for iter in range(120):
+last_cost = 0
+for iter in range(200):
+    
     ef_cost = np.zeros(LAYER_SIZE[L])
     max_cost = np.zeros(LAYER_SIZE[L])
     for j in range(len(inputs)):
@@ -89,7 +90,7 @@ for iter in range(120):
             z[i] = np.dot(weights[i-1], nodes[i-1]) + bias[i - 1]
             nodes[i] = activation_func(z[i])
         ef_cost += cost(nodes[L], answer) / len(inputs)
-        max_cost = np.array([max(m, curr) for m, curr in zip(max_cost, ef_cost)])
+        max_cost = np.array([max(m, curr) for m, curr in zip(max_cost, cost(nodes[L], answer))])
         #if j == 1 or j == 400:# or j == 800:
             #print(str(iter) + "::" + str(j) + "\t" + str(nodes[L]))
             #print(str(iter) + "\t" + str(j) + str(weights))
@@ -116,7 +117,9 @@ for iter in range(120):
         total_delta_bias    = [np.nan_to_num(tdb + db) for tdb, db in zip(total_delta_bias, delta_bias)]
     print("EFFECTIVE COST FOR ITER:  " + str(ef_cost))
     print("MAXIMUM OF COST FOR ITER: " + str(max_cost))
-    print("SUM EFFECTIVE COST ITER:  " + str(sum(ef_cost)))
+    print("SUM EFFECTIVE COST ITER:  " + str(sum(ef_cost**2)))
+    print("\t\tCHANGE: \t\t\t" + str(sum(ef_cost**2) - last_cost))
+    last_cost = sum(ef_cost**2)
         #print(nodes)
         
     weights = [np.nan_to_num(w - DAMP * dw / len(inputs)) for w, dw in zip(weights, total_delta_weights)]
