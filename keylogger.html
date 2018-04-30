@@ -1,8 +1,9 @@
 <html>
-<head>
-	keylogger
-</head>
-<textarea name="Text1" onkeyup="keyup(event)" onkeydown="keydown(event)" cols="100" rows="100"></textarea>
+<button onclick="download()">Download</button>
+<button onclick="reset()">Reset</button><br>
+PASSWORD: <span id="pass">--</span>     <span style="color:green; font-size:40px;" id="count">0</span>
+<br>
+<textarea id="Text1" style="font-size:20px;" onkeyup="keyup(event)" onkeydown="keydown(event)" cols="40" rows="20"></textarea>
 
 <script src="keylogger.js" ></script>
 
