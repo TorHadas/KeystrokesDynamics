@@ -1,3 +1,7 @@
+// PROBLEMS WITH KEY LOGGER
+// doesnt support realsing 2nd before 1st character
+// 
+
 var timer = {};
 var SPACE_KEY = 32;
 var ENTER_KEY = 13;
@@ -63,15 +67,17 @@ function keyup(event) {
 		console.log("pressed "+key+"-"+String.fromCharCode(key)+" for "+latency+" seconds.");
 	}
 	if(key == ENTER_KEY) {
-		document.getElementById("Text1").value = "";
+		
 		//console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
 		if(inputing) {
 			console.log("~~~ PASSWORD: "+password);
 			password_latency = [];
 			inputing = false;
-			document.getElementById("pass").innerHTML = passwordStr;
+			document.getElementById("pass").innerHTML = document.getElementById("Text1").value;
+			passwordStr = document.getElementById("Text1").value;
 		}
+		document.getElementById("Text1").value = "";
 		if(password_latency.length == password.length * 2 - 1) {
 			letancies.push(password_latency);
 			document.getElementById("count").innerHTML = letancies.length
