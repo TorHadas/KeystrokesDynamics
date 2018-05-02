@@ -1,7 +1,8 @@
 import numpy as np
-from Data import Data
+from Data import *
 from plotResults import plot
-folder_dir = "C:\\Users\\T8497069\\Desktop\\Smop\\KeystrokesDynamics\\data"
+#folder_dir = "C:\\Users\\T8497069\\Desktop\\Smop\\KeystrokesDynamics\\data"
+folder_dir = 'C:\\Users\\T8497069\\Desktop\\Smop\\KeystrokesDynamics\\logs'
 
 
 np.set_printoptions(suppress=True,precision=5)
@@ -20,16 +21,16 @@ def cost(net_result, answer, derivative=False):
 def train_network(folder_data_dir):
 
     #region: set network constants
-    DAMP = 0.01
-    NETWORK_SIZE = 2
+    DAMP = 0.001
+    NETWORK_SIZE = 3
     L = NETWORK_SIZE - 1
     LAYER_SIZE = [
-        25,  # input
-        5,  # hidden
-        5    # output - 8 users, 1 non-user (default)
+        15,  # input
+        13,  # hidden
+        11    # output - 11 users, 0 non-user (default)
     ]
     MAX_LAYER_SIZE = np.max(LAYER_SIZE)
-    iter_num = 200
+    iter_num = 150
 
 
     nodes = [
@@ -67,20 +68,32 @@ def train_network(folder_data_dir):
 
     #endregion
 
+    # region: GET DATA 2
+    orig_data = create_multiple_members(folder_dir)
+    inputs = []
+    answers = np.zeros((len(orig_data), LAYER_SIZE[L]))
+    print(len(answers), len(answers[0]))
+    for i in range(len(orig_data)):
+        print(i, orig_data[i][0])
+        answers[i][orig_data[i][0]] = 1
+        inputs.append(orig_data[i][1])
+    # endregion
+
     # region: GET DATA
-    data = Data(folder_dir)
-    data = data.members_data
-    answers = np.array([])
-    inputs  = np.zeros((len(data), np.max([len(data[i]) for i in range(len(data))]) - 1))
-    answers  = np.zeros((len(data), LAYER_SIZE[L]))
+    #data = Data(folder_dir)
+    #data = data.members_data
+    #answers = np.array([])
+    #inputs  = np.zeros((len(data), np.max([len(data[i]) for i in range(len(
+    # data))]) - 1))
+    #answers  = np.zeros((len(data), LAYER_SIZE[L]))
     #endregion
 
 
-    for i in range(len(data)):
-        inputs[i] = activation_func(np.array(data[i][1:]))
-        ans = [0] * LAYER_SIZE[L]
-        ans[data[i][0]] = 1
-        answers[i] = ans
+    #for i in range(len(inputs)):
+    #    inputs[i] = activation_func(np.array(data[i][1:]))
+    #    ans = [0] * LAYER_SIZE[L]
+    #    ans[data[i][0]] = 1
+    #    answers[i] = ans
     eff_cost_vec = []
     for i in range(LAYER_SIZE[L]):
         eff_cost_vec.append([0] * iter_num)
@@ -91,9 +104,10 @@ def train_network(folder_data_dir):
         ef_cost = np.zeros(LAYER_SIZE[L])
         max_cost = np.zeros(LAYER_SIZE[L])
         for j in range(len(inputs)):
-            sample = inputs[j]
-            answer = answers[j]
-            nodes[0] = sample
+            print(inputs[j])
+            sample = np.array(inputs[j])
+            answer = np.array(answers[j])
+            nodes[0] = activation_func(sample)
             for i in range(1, L + 1):
                 z[i] = np.dot(weights[i-1], nodes[i-1]) + bias[i - 1]
                 nodes[i] = activation_func(z[i])
@@ -161,4 +175,5 @@ def train_network(folder_data_dir):
 train_network(folder_dir)
 
 
-def test_network()
+def test_network():
+    return

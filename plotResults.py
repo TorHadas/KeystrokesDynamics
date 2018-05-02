@@ -12,8 +12,9 @@ def plot(x_total_data, y_total_data, x_label, y_label, figure_description):
     print(y_total_data)
     print(x_total_data)
     for i in range(len(y_total_data)):
-        plt.plot(x_total_data[i], y_total_data[i], colors[i])
-        patch = mpatches.Patch(color=colors[i], label='class [' + str(i + 1) +
+        plt.plot(x_total_data[i], y_total_data[i], colors[i%len(colors)])
+        patch = mpatches.Patch(color=colors[i%len(colors)], label='class [' +
+                                                             str(i + 1) +
                                                     '] cost')
         patches.append(patch)
     plt.legend(handles=patches)

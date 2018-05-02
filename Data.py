@@ -36,9 +36,32 @@ def create_person_data(directory_of_file):
                     corrected_row = np.asfarray(corrected_row, float)
                     timing_array.append(corrected_row)
 
-    return password, timing_array
+    return [password, timing_array]
+
+def create_multiple_members(folder_directory):
+    members = []
+    for file in os.listdir(folder_directory):
+        inserted = False
+        file_path = os.path.relpath("logs\\" + file)
+        print(file_path)
+        if(file_path == "logs\passwords.txt"):
+            continue
+        new_member = create_person_data(file_path)
+        for i in range(len(members)):
+            if new_member[0] == members[i][0]:
+                inserted = True
+                members[i][1] += new_member[1]
+        if not inserted:
+            members.append(new_member)
+    return convert_members(members)
 
 
+def convert_members(members):
+    converted_members = []
+    for i in range(len(members)):
+        for j in range(len(members[i][1])):
+            converted_members.append((i, members[i][1][j]))
+    return converted_members
 
 #file_dir = "C:\\Users\\T8497069\\Desktop\\bloch 1.txt"
 #person1_data = create_person_data(file_dir)
@@ -47,3 +70,7 @@ def create_person_data(directory_of_file):
 #print(person1_data[1])
 #for i in person1_data[1]:
 #    print(len(i))
+
+
+
+folder_dir = 'C:\\Users\\T8497069\\Desktop\\Smop\\KeystrokesDynamics\\logs'
