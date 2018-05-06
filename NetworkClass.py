@@ -1,5 +1,5 @@
 import Data
-from plotResults import plot
+from plotResults import *
 import numpy as np
 import os
 
@@ -131,9 +131,7 @@ class Network():
         iter_vec = []
         for i in range(len(eff_cost_vec)):
             iter_vec.append(np.arange(len(eff_cost_vec[i])))
-        plot(iter_vec, eff_cost_vec, "iterations", "normalized cost",
-             "costs graphs "
-             "damp = " + str(DAMP) + " " + str(self.network_train_counter))
+        simplePlot(iter_vec, eff_cost_vec, DAMP)
         # endregion
 
         self.L = L; self.LAYER_SIZE = LAYER_SIZE; self.inputs = inputs; self.answers = answers; self.nodes = nodes; self.z = z; self.delta_z = delta_z; self.delta_bias = delta_bias; self.delta_weights = delta_weights; self.delta_nodes = delta_nodes; self.DAMP = DAMP; self.weights = weights; self.total_delta_weights = total_delta_weights; self.bias = bias; self.total_delta_bias = total_delta_bias; self.answers = answers; 
