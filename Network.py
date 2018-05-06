@@ -1,14 +1,14 @@
-import numpy as np
 from Data import *
 from plotResults import plot
+import os
 #folder_dir = "C:\\Users\\T8497069\\Desktop\\Smop\\KeystrokesDynamics\\data"
-folder_dir = 'C:\\Users\\T8497069\\Desktop\\Smop\\KeystrokesDynamics\\logs'
+folder_dir = os.getcwd() + "\\logs"
 
 
 np.set_printoptions(suppress=True,precision=5)
 def activation_func(x, derivative=False):
     if derivative:
-        return np.nan_to_num(x * (1 - x))
+        return np.nan_to_num(np.exp(-x) / np.power(1 + np.exp(-x), 2))
     return 1 / (1 + np.exp(-x))
 
 
@@ -21,16 +21,16 @@ def cost(net_result, answer, derivative=False):
 def train_network(folder_data_dir):
 
     #region: set network constants
-    DAMP = 0.001
+    DAMP = 0.0005
     NETWORK_SIZE = 3
     L = NETWORK_SIZE - 1
     LAYER_SIZE = [
         15,  # input
-        13,  # hidden
+        11,  # hidden
         11    # output - 11 users, 0 non-user (default)
     ]
     MAX_LAYER_SIZE = np.max(LAYER_SIZE)
-    iter_num = 150
+    iter_num = 200
 
 
     nodes = [
@@ -69,12 +69,10 @@ def train_network(folder_data_dir):
     #endregion
 
     # region: GET DATA 2
-    orig_data = create_multiple_members(folder_dir)
+    orig_data = create_multiple_members(folder_data_dir)
     inputs = []
     answers = np.zeros((len(orig_data), LAYER_SIZE[L]))
-    print(len(answers), len(answers[0]))
     for i in range(len(orig_data)):
-        print(i, orig_data[i][0])
         answers[i][orig_data[i][0]] = 1
         inputs.append(orig_data[i][1])
     # endregion
@@ -104,7 +102,6 @@ def train_network(folder_data_dir):
         ef_cost = np.zeros(LAYER_SIZE[L])
         max_cost = np.zeros(LAYER_SIZE[L])
         for j in range(len(inputs)):
-            print(inputs[j])
             sample = np.array(inputs[j])
             answer = np.array(answers[j])
             nodes[0] = activation_func(sample)
@@ -113,25 +110,9 @@ def train_network(folder_data_dir):
                 nodes[i] = activation_func(z[i])
             ef_cost += cost(nodes[L], answer) / len(inputs)
             max_cost = np.array([max(m, curr) for m, curr in zip(max_cost, cost(nodes[L], answer))])
-            #if j == 1 or j == 400:# or j == 800:
-                #print(str(iter) + "::" + str(j) + "\t" + str(nodes[L]))
-                #print(str(iter) + "\t" + str(j) + str(weights))
-                #print(str(iter) + "::" + str(j) + "\t" + str(cost(nodes[L], answer)))
-                #print("~~~~~\t~~~~~~~~~~")
+
 
             delta_z[L] = cost(nodes[L], answer, True) * activation_func(z[L], True)
-
-            #region: calculations
-            '''
-                delta_bias[L - 1] = np.array(delta_z[L])
-                delta_weights[L - 1] = np.outer(delta_z[L], nodes[L - 1])
-                
-                delta_nodes[L - 1] = np.dot(delta_weights[L - 1], delta_z[L]) / LAYER_SIZE[L]
-                delta_z[L - 1] = delta_nodes[L - 1] * activation_func(z[L - 1], True)
-                delta_bias[L - 2]  = np.array(delta_z[L - 1])
-                delta_weights[L - 2] = np.outer(delta_z[L - 1], nodes[L - 2])
-            '''
-            #endregion
 
             for i in range(1, L + 1):
                 delta_bias[L - i]  = np.array(delta_z[L + 1 - i])

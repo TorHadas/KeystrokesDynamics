@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from functools import reduce
 
 import numpy as np
 #MPLCONFIGDIR=/tmp/some_pathN python plotResults.py
@@ -9,8 +10,6 @@ def plot(x_total_data, y_total_data, x_label, y_label, figure_description):
     fig = plt.gcf()
     fig.canvas.set_window_title(figure_description)
     patches = []
-    print(y_total_data)
-    print(x_total_data)
     for i in range(len(y_total_data)):
         plt.plot(x_total_data[i], y_total_data[i], colors[i%len(colors)])
         patch = mpatches.Patch(color=colors[i%len(colors)], label='class [' +
@@ -23,6 +22,17 @@ def plot(x_total_data, y_total_data, x_label, y_label, figure_description):
     plt.xlabel(x_label)
     plt.savefig("C:\\Users\\T8497069\\Desktop\\" + figure_description + \
                 ".jpg", bbox_inches='tight')
+    #plt.show()
+
+    #plot average cost value
+    plt.figure()
+    avg_y_data = reduce((lambda x, y: np.array(x) + np.array(y)), y_total_data)
+    avg_y_data = np.array(avg_y_data)
+    avg_y_data = avg_y_data / len(y_total_data)
+    plt.plot(x_total_data[0], avg_y_data, 'r')
+    plt.title(y_label + "(" + x_label + ")")
+    plt.ylabel(y_label)
+    plt.xlabel(x_label)
     plt.show()
 
     print("saved")
