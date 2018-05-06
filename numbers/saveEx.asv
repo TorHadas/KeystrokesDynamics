@@ -1,0 +1,17 @@
+function saveEx()
+    images = loadMNISTImages('train-images.idx3-ubyte');
+    labels = loadMNISTLabels('train-labels.idx1-ubyte');
+
+    b{1000} = [];
+    fileID = fopen('dataMat\data.txt'],'w');
+    for i=1:1000
+        b{i} = {labels(i), images(:, i)};
+        
+        fprintf(fileID,[num2str(labels(i)) ';']);
+        fprintf(fileID,'%6.1f\r\n', images(:, i));
+        
+    end
+    fclose(fileID);
+
+    
+end
