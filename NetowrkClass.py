@@ -1,18 +1,20 @@
 from Data import *
-from plotResults import plot
+from plotResults import *
 import os
+import time
 
 
 def activation_func(x, derivative=False):
     if derivative:
-        return np.power((np.exp(-x) / np.power(1 + np.exp(-x), 2)), 2)
+        #return np.power((np.exp(-x) / np.power(1 + np.exp(-x), 2)), 2)
+        return x * (1-x)
     return 1 / (1 + np.exp(-x))
 
 
 def cost(net_result, answer, derivative=False):
     if derivative:
-        return 2 * (answer - net_result)
-    return np.abs(np.power(net_result - answer, 2))
+        return np.abs((answer - net_result)) / (answer - net_result)
+    return np.abs(np.power(net_result - answer, 1))
 
 
 class Network():
@@ -130,9 +132,9 @@ class Network():
                 for i in range(1, L + 1):
                     z[i] = np.dot(weights[i - 1], nodes[i - 1]) + bias[i - 1]
                     nodes[i] = activation_func(z[i])
-                ef_cost += cost(nodes[L], answer) / len(inputs)
-                max_cost = np.array([max(m, curr) for m, curr in
-                                     zip(max_cost, cost(nodes[L], answer))])
+                #ef_cost += cost(nodes[L], answer) / len(inputs)
+                #max_cost = np.array([max(m, curr) for m, curr in
+                #                     zip(max_cost, cost(nodes[L], answer))])
 
                 delta_z[L] = cost(nodes[L], answer, True) * activation_func(
                     z[L], True)
@@ -142,8 +144,7 @@ class Network():
                     delta_weights[L - i] = np.outer(delta_z[L + 1 - i],
                                                     nodes[L - i])
                     delta_nodes[L - i] = np.dot(delta_z[L + 1 - i],
-                                                delta_weights[L - i]) / \
-                                         LAYER_SIZE[L - i + 1]
+                                                delta_weights[L - i])
                     delta_z[L - i] = delta_nodes[L - i] * activation_func(
                         z[L - i], True)
 
@@ -151,6 +152,9 @@ class Network():
                                        zip(total_delta_weights, delta_weights)]
                 total_delta_bias = [np.nan_to_num(tdb + db) for tdb, db in
                                     zip(total_delta_bias, delta_bias)]
+
+
+
 
                 # region: create vector of results to plot
                 for i in range(len(answer)):
@@ -175,18 +179,19 @@ class Network():
                                         samples_same_ans[i]
                 # endregion
 
+
+        if iter % 100 == 0:
+            print(iter)
         # region: plot graphs
         iter_vec = []
         for i in range(len(eff_cost_vec)):
             iter_vec.append(np.arange(len(eff_cost_vec[i])))
-        plot(iter_vec, eff_cost_vec, "iterations", "normalized cost",
-             "costs graphs "
-             "damp = " + str(DAMP) + " " + str(self.network_train_counter))
+        simplePlot(iter_vec, eff_cost_vec, DAMP)
         # endregion
         return weights, bias, LAYER_SIZE
 
 
 folder_dir = os.getcwd() + "\\logs"
-network = Network(0.001, 200, 2)
+network = Network(1, 200, 2)
 network.get_data(folder_dir)
-network.train_network(100)
+network.train_network(50)
