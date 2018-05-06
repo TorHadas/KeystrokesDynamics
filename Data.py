@@ -37,7 +37,13 @@ def get_fake_data():
                         first_row = False
                     else:
                         vector.append(int(line))
+                vector = np.array(vector)
+                v = vector
+                v[v > 0] -= 95
+                v[v == 0] = -10
                 data.append((member, vector))
+
+
     return data
 
 def create_person_data(directory_of_file):
@@ -55,13 +61,15 @@ def create_person_data(directory_of_file):
                 data = np.asfarray(data, float)
                 # MEAN
                 mean = sum(data) / len(data)
-                data /= mean
+                data -= mean
+                data /= mean/20
                 # PRESS MEAN
                 press_mean = sum([data[2*i] for i in range(math.floor((len(data) + 1)/2))]) / ((len(data) + 1)/2)
                 latency_mean = sum([data[2*i + 1] for i in range(math.floor((len(data))/2))]) / (len(data)/2)
                 data = np.concatenate((np.array([mean, press_mean, latency_mean]), data))
                 #print("DATA ---- \t" + str(data))
                 inputs.append(data)
+
 
     return [password, inputs]
 
@@ -73,10 +81,10 @@ def create_multiple_members(folder_directory):
         if(file_path == "logs\passwords.txt"):
             continue
         new_member = create_person_data(file_path)
-        for i in range(len(members)):
-            if new_member[0] == members[i][0]:
-                inserted = True
-                members[i][1] += new_member[1]
+        #for i in range(len(members)):
+        #    if new_member[0] == members[i][0]:
+        #        inserted = True
+        #        members[i][1] += new_member[1]
         if not inserted:
             members.append(new_member)
     return convert_members(members)

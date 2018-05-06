@@ -1,4 +1,5 @@
 import Data
+from Debug import Debug
 from plotResults import *
 import numpy as np
 import os
@@ -6,13 +7,14 @@ import os
 
 def activation_func(x, derivative=False):
     if derivative:
-        return activation_func(x) * (1.0 - activation_func(x))
+        x = activation_func(x) 
+        return np.nan_to_num(x * (1.0 - x))
     return 1 / (1 + np.exp(-x))
 
 
 def cost(net_result, answer, derivative=False):
     if derivative:
-        return -2 * (answer - net_result)
+        return 2 * (net_result - answer)
     return np.abs(np.power(net_result - answer, 2))
 
 
@@ -20,24 +22,20 @@ class Network():
     # INITIALIZE NEW NETWORK
     def __init__(self, damp=0.0001, default_iter_num=10,
                  network_size=3, layer_size=[15, 11, 11]):
+        np.set_printoptions(precision=4)
+        self.debug = Debug()
+        #self.debug.off()
         self.DAMP = damp
         self.DEFAULT_ITER_NUM = default_iter_num
         self.LAYER_SIZE = layer_size
         self.NETWORK_SIZE = network_size
         self.L = network_size - 1
         self.nodes = [np.zeros(self.LAYER_SIZE[i]) for i in range(self.L + 1)]
-        self.weights = [2 * np.random.rand(self.LAYER_SIZE[i + 1],
-                                           self.LAYER_SIZE[i])
-                        - 1 for i
-                        in range(self.L)]
-        self.bias = [2 * np.random.rand(self.LAYER_SIZE[i + 1]) - 1 for i in
-                     range(self.L)]
+        self.weights = [2 * np.random.rand(self.LAYER_SIZE[i + 1], self.LAYER_SIZE[i]) - 1 for i in range(self.L)]
+        self.bias = [2 * np.random.rand(self.LAYER_SIZE[i + 1]) - 1 for i in range(self.L)]
 
-        self.total_delta_weights = [np.zeros((self.LAYER_SIZE[i + 1],
-                                              self.LAYER_SIZE[i])) for i in
-                                    range(self.L)]
-        self.total_delta_bias = [np.zeros(self.LAYER_SIZE[i + 1]) for i in
-                                 range(self.L)]
+        self.total_delta_weights = [np.zeros((self.LAYER_SIZE[i + 1], self.LAYER_SIZE[i])) for i in range(self.L)]
+        self.total_delta_bias = [np.zeros(self.LAYER_SIZE[i + 1]) for i in range(self.L)]
 
         self.delta_nodes = list(self.nodes)
         self.delta_bias = list(self.bias)
@@ -50,8 +48,8 @@ class Network():
         self.network_train_counter = 0
 
     def get_data(self, folder_data_dir):
-        #orig_data = Data.create_multiple_members(folder_data_dir)
-        orig_data = Data.get_fake_data()
+        orig_data = Data.create_multiple_members(folder_data_dir)
+        #orig_data = Data.get_fake_data()
         self.answers = np.zeros((len(orig_data), self.LAYER_SIZE[self.L]))
         self.inputs = []
         for i in range(len(orig_data)):
@@ -98,6 +96,7 @@ class Network():
                 max_cost = np.array([max(m, curr) for m, curr in zip(max_cost, cost(nodes[L], answer))])
 
                 #LEARN
+
                 delta_z[L] = cost(nodes[L], answer, True) * activation_func(z[L], True)
                 for i in range(1, L + 1):
                     delta_bias[L - i] = np.array(delta_z[L + 1 - i])
@@ -105,13 +104,17 @@ class Network():
                     delta_nodes[L - i] = np.dot(delta_z[L + 1 - i], delta_weights[L - i]) / LAYER_SIZE[L - i + 1]
                     delta_z[L - i] = delta_nodes[L - i] * activation_func(z[L - i], True)
 
+                if(j == 1 or j == len(inputs)-1):
+                    self.debug.log(nodes[L])
+                    self.debug.log(answer)
+
                 total_delta_weights = [np.nan_to_num(tdw + dw) for tdw, dw in zip(total_delta_weights, delta_weights)]
-                total_delta_bias = [np.nan_to_num(tdb + db) for tdb, db in zip(total_delta_bias, delta_bias)]
+                total_delta_bias    = [np.nan_to_num(tdb + db) for tdb, db in zip(total_delta_bias, delta_bias)]
 
                 # region: create vector of results to plot
                 for i in range(len(answer)):
                     if (answer[i] == 1):
-                        # print("in input j: " + str(j) + " the answer is " + str(
+                        # self.debug.log("in input j: " + str(j) + " the answer is " + str(
                         #    answer) + " the net answer is " + str(nodes[L]) +
                         #      " adding cost to place " + str(i) + " " + str(iter))
                         if (iter == 0):
@@ -120,8 +123,11 @@ class Network():
                 # endregion
 
             weights = [np.nan_to_num(w - DAMP * dw / len(inputs)) for w, dw in zip(weights, total_delta_weights)]
-            bias = [np.nan_to_num(b - DAMP * db / len(inputs)) for b, db in zip(bias, total_delta_bias)]
+            bias    = [np.nan_to_num(b - DAMP * db / len(inputs)) for b, db in zip(bias, total_delta_bias)]
 
+            
+            #self.debug.log("TOTAL DELTA="+str(DAMP*total_delta_weights[L-1] / len(inputs)))
+            
             # normalize by num of samples
             for i in range(len(eff_cost_vec)):
                 eff_cost_vec[i][iter] = eff_cost_vec[i][iter] / samples_same_ans[i]

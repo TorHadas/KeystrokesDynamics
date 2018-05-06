@@ -1,7 +1,8 @@
 import numpy as np
-from Data import Data
-from plotResults import plot
-folder_dir = "C:\\Users\\T8495554\\Documents\\Workspace\\Code\\KeystrokesDynamics\\data"
+import Data
+from plotResults import *
+import os
+folder_dir = os.getcwd() + "\\data"
 
 #region: set network constants
 DAMP = 0.01
@@ -48,11 +49,13 @@ def train_network(data_dir):
     total_delta_bias    = list(bias)
 
     # region: GET DATA
-    data = Data(data_dir)
-    data = data.members_data
-    answers = np.array([])
-    inputs  = np.zeros((len(data), np.max([len(data[i]) for i in range(len(data))]) - 1))
-    answers  = np.zeros((len(data), LAYER_SIZE[L]))
+    data = Data.get_fake_data()
+
+    answers = np.zeros((len(data), LAYER_SIZE[L]))
+    inputs = []
+    for i in range(len(data)):
+        answers[i][data[i][0]] = 1
+        inputs.append(data[i][1])
     #endregion
 
     for i in range(len(data)):
@@ -73,11 +76,11 @@ def train_network(data_dir):
         for j in range(len(inputs)):
             sample = inputs[j]
             answer = answers[j]
-            nodes[0] = sample
+            nodes[0] = sample[0]
 
             #UPDATE NODES AND GET OUTPUT
             for i in range(1, L + 1):
-                z[i] = np.dot(weights[i-1], nodes[i-1]) + bias[i - 1]
+                z[i] = np.dot(weights[i - 1], nodes[i - 1]) + bias[i - 1]
                 nodes[i] = activation_func(z[i])
 
             curr_cost = cost(nodes[L], answer);
@@ -86,7 +89,7 @@ def train_network(data_dir):
             delta_z[L] = cost(nodes[L], answer, True) * activation_func(z[L], True)
 
             #DEBUG
-            if(j == 5):
+            if(j == 5 or j == 200):
                 print("iter " + str(iter) + "\t" + str(curr_cost))
  
             #CALCULATE CHANGES IN WEIGHTS AND BIAS
@@ -119,8 +122,7 @@ def train_network(data_dir):
     iter_vec = []
     for i in range(len(eff_cost_vec)):
         iter_vec.append(np.arange(len(eff_cost_vec[i])))
-    plot(iter_vec, eff_cost_vec, "iterations", "normalized cost", "costs graphs "
-                                                        "damp = " + str(DAMP) )
+    simplePlot(iter_vec, eff_cost_vec, DAMP)
     #endregion
     return weights, bias, LAYER_SIZE
 
