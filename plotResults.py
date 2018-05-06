@@ -1,11 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-<<<<<<< HEAD
 import os
-=======
 from functools import reduce
-
->>>>>>> d14e3051d2d35b3b6fa83a1ed31c89522b8e8887
 import numpy as np
 #MPLCONFIGDIR=/tmp/some_pathN python plotResults.py
 
@@ -14,11 +10,6 @@ def plot(x_total_data, y_total_data, x_label, y_label, figure_description):
     fig = plt.gcf()
     fig.canvas.set_window_title(figure_description)
     patches = []
-<<<<<<< HEAD
-    #print(y_total_data)
-    #print(x_total_data)
-=======
->>>>>>> d14e3051d2d35b3b6fa83a1ed31c89522b8e8887
     for i in range(len(y_total_data)):
         plt.plot(x_total_data[i], y_total_data[i], colors[i%len(colors)])
         patch = mpatches.Patch(color=colors[i%len(colors)], label='class [' +

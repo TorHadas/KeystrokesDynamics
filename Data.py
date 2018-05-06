@@ -2,6 +2,7 @@ import os
 import math
 import numpy as np
 import re
+
 def get_numbers_data():
     FILe = os.getcwd() + "\\data.txt"
     inputs = []
@@ -19,8 +20,25 @@ def get_numbers_data():
                 inputs.append(data)
                 answers.append(answer)
                 ret.append((int(answer), data))
-
     return ret
+
+def get_fake_data():
+    data = []
+    directory = os.getcwd() + "\\data"
+    for file in os.listdir(directory):
+        filename = os.fsdecode(file)
+        if filename.endswith(".txt"):
+            with open(directory + "\\" + filename, "r") as file:
+                first_row = True
+                vector = []
+                for line in file.readlines():
+                    if(first_row):
+                        member = int(line)
+                        first_row = False
+                    else:
+                        vector.append(int(line))
+                data.append((member, vector))
+    return data
 
 def create_person_data(directory_of_file):
     password = ''
@@ -79,7 +97,3 @@ def convert_members(members):
 #print(person1_data[1])
 #for i in person1_data[1]:
 #    print(len(i))
-
-
-
-folder_dir = 'C:\\Users\\T8497069\\Desktop\\Smop\\KeystrokesDynamics\\logs'
