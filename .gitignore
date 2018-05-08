@@ -6,3 +6,4 @@ plots/costs graphs damp = 1e-05.jpg
 plots/costs graphs damp = 0.001.jpg
 plots/costs graphs damp = 0.0001.jpg
 *.jpg
+*.pyc
