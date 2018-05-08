@@ -57,21 +57,22 @@ def create_person_data(directory_of_file):
             if (line is not '\n'):
                 new_row = re.split('; |,|\*|\n',line)
                 line = line.split("\n")[0].split(",")
-                data = np.array(line)
-                data = np.asfarray(data, float)
-                # MEAN
-                mean = sum(data) / len(data)
-                data -= mean
-                data /= mean/20
-                # PRESS MEAN
-                press_mean = sum([data[2*i] for i in range(math.floor((len(data) + 1)/2))]) / ((len(data) + 1)/2)
-                latency_mean = sum([data[2*i + 1] for i in range(math.floor((len(data))/2))]) / (len(data)/2)
-                data = np.concatenate((np.array([mean, press_mean, latency_mean]), data))
+                data = vec_to_data(line)
                 #print("DATA ---- \t" + str(data))
                 inputs.append(data)
-
-
     return [password, inputs]
+
+def vec_to_data(line):
+    data = np.array(line)
+    data = np.asfarray(data, float)
+    # MEAN
+    mean = sum(data) / len(data)
+    data -= mean
+    data /= mean/20
+    # PRESS MEAN
+    press_mean = sum([data[2*i] for i in range(math.floor((len(data) + 1)/2))]) / ((len(data) + 1)/2)
+    latency_mean = sum([data[2*i + 1] for i in range(math.floor((len(data))/2))]) / (len(data)/2)
+    return np.concatenate((np.array([mean, press_mean, latency_mean]), data))
 
 def create_multiple_members(folder_directory):
     members = []

@@ -3,7 +3,8 @@ from Debug import Debug
 from plotResults import *
 import numpy as np
 import os
-
+import random
+import json
 
 def activation_func(x, derivative=False):
     if derivative:
@@ -21,7 +22,7 @@ def cost(net_result, answer, derivative=False):
 class Network():
     # INITIALIZE NEW NETWORK
     def __init__(self, damp=0.0001, default_iter_num=10,
-                 network_size=3, layer_size=[15, 11, 11]):
+                 network_size=2, layer_size=[18, 2, 11]):
         np.set_printoptions(precision=4)
         self.debug = Debug()
         #self.debug.off()
@@ -47,6 +48,30 @@ class Network():
         self.total_delta_bias = list(self.bias)
         self.network_train_counter = 0
 
+    def save(self, filename):
+        data = {
+            "weights" : array_to_list(self.weights),
+            "bias" : array_to_list(self.bias)
+        }
+        with open(filename, 'w') as file:
+            json.dump(data, file, indent=4)
+
+    def load(self, filename):
+        data = {}
+        with open(filename, 'r') as file:
+            data = json.load(file)
+        w = data["weights"]
+        b = data["bias"]
+        self.weights = [np.array(w[i]) for i in range(len(w))]
+        self.bais = [np.array(b[i]) for i in range(len(b))]
+    
+    def run(self, sample):
+        self.nodes[0] = activation_func(sample)
+        for i in range(1, self.L + 1):
+            self.z[i] = np.dot(self.weights[i - 1], self.nodes[i - 1]) + self.bias[i - 1]
+            self.nodes[i] = activation_func(self.z[i])
+        return self.nodes[self.L]
+
     def get_data(self, folder_data_dir):
         orig_data = Data.create_multiple_members(folder_data_dir)
         #orig_data = Data.get_fake_data()
@@ -59,7 +84,7 @@ class Network():
 
 
 
-    def train_network(self, iter_num=None):
+    def train(self, iter_num=None):
         if(iter_num == None):
             iter_num = self.DEFAULT_ITER_NUM
         # region: setting variables to be the same as the class variables
@@ -77,10 +102,16 @@ class Network():
         samples_same_ans = [0] * LAYER_SIZE[L]
         # endregion
 
-
+        self.debug.log(answers)
         for iter in range(iter_num):
             ef_cost = np.zeros(LAYER_SIZE[L])
             max_cost = np.zeros(LAYER_SIZE[L])
+            '''
+            combined = list(zip(inputs, answers))
+            random.shuffle(combined)
+            inputs[:], answers[:] = zip(*combined)
+            '''
+            self.debug.log(answers)
             for j in range(len(inputs)):
                 sample = np.array(inputs[j])
                 answer = np.array(answers[j])
@@ -103,6 +134,7 @@ class Network():
                     delta_nodes[L - i] = np.dot(delta_z[L + 1 - i], delta_weights[L - i]) / LAYER_SIZE[L - i + 1]
                     delta_z[L - i] = delta_nodes[L - i] * activation_func(z[L - i], True)
 
+                
                 if(j == 1 or j == len(inputs)-1):
                     self.debug.log(nodes[L])
                     self.debug.log(answer)
@@ -143,3 +175,5 @@ class Network():
         return weights, bias, LAYER_SIZE
 
 
+def array_to_list(arr):
+    return [np.ndarray.tolist(arr[i]) for i in range(len(arr))],
