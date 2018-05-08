@@ -64,7 +64,6 @@ class Network():
     def train_network(self, iter_num=None):
         if(iter_num == None):
             iter_num = self.DEFAULT_ITER_NUM
-        self.network_train_counter += 1
         # region: setting variables to be the same as the class variables
         L = self.L; LAYER_SIZE = self.LAYER_SIZE; inputs = self.inputs; answers = self.answers;
         nodes = self.nodes; z = self.z; delta_z = self.delta_z; delta_bias = self.delta_bias; 
