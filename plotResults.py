@@ -1,11 +1,13 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import os
 from functools import reduce
+import datetime as dt
+import os
 import numpy as np
 #MPLCONFIGDIR=/tmp/some_pathN python plotResults.py
 
 def plot(x_total_data, y_total_data, x_label, y_label, figure_description):
+    time = str(dt.datetime.now().day) + "  " + str(dt.datetime.now().hour) + " " + str(dt.datetime.now().minute)
     colors = ["r", "g", "b", "y", "k", "m", "c"]
     fig = plt.gcf()
     fig.canvas.set_window_title(figure_description)
@@ -17,10 +19,10 @@ def plot(x_total_data, y_total_data, x_label, y_label, figure_description):
                                                     '] cost')
         patches.append(patch)
     plt.legend(handles=patches)
-    plt.title(y_label + "(" + x_label + ")" )
+    plt.title(y_label + "(" + x_label + ")" + " " + time)
     plt.ylabel(y_label)
     plt.xlabel(x_label)
-    plt.savefig(os.getcwd() + "\\" + figure_description + \
+    plt.savefig(os.getcwd() + "\\plots\\" + figure_description + \
                 ".jpg", bbox_inches='tight')
     #plt.show()
 
@@ -30,17 +32,17 @@ def plot(x_total_data, y_total_data, x_label, y_label, figure_description):
     avg_y_data = np.array(avg_y_data)
     avg_y_data = avg_y_data / len(y_total_data)
     plt.plot(x_total_data[0], avg_y_data, 'r')
-    plt.title(y_label + "(" + x_label + ")")
+    plt.title("mean " + y_label + "(" + x_label + ")" + " " + time)
     plt.ylabel(y_label)
     plt.xlabel(x_label)
+
+    plt.savefig(os.getcwd() + "\\plots\\mean" + figure_description + \
+        ".jpg", bbox_inches='tight')
     plt.show()
 
-    print("saved")
 
-#x_data = np.array([1,2,3,4,5,6,7,8,9,10])
-#y_data1 = 2 * np.array([1,2,3,4,5,6,7,8,9,10])
-#for i in range(10):
-#    power = np.random.random_sample(10)
-#    y_data2 = np.power(np.array([1,2,3,4,5,6,7,8,9,10]), power )
-#
-#plot(x_data, y_data1, y_data2, 'x', 'y', 'TestToSeeIfTorIsAlert')
+
+def simplePlot (iterations_vector, effective_cost_vector, DAMP):
+    time = str(dt.datetime.now().day) + "  " + str(dt.datetime.now().hour) + " " + str(dt.datetime.now().minute)
+    plot(iterations_vector, effective_cost_vector, "iterations", "normalized cost", "costs graphs damp "
+         + str(DAMP) + " " + time)
