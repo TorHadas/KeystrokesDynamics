@@ -32,13 +32,10 @@ def identification_decider(result):
 
 
 def test(network, data):
-    imposter = 1; othentic = 0;
-    true_identifications = 0
-    false_identification = 0
-    false_rejection_rate = 0
-    false_acceptance_rate = 0
-    mean_cost_vec = []
-    max_cost_vec = []
+    imposter = 1; othentic = 0
+    true_identifications = 0; false_identification = 0
+    false_rejection_rate = 0; false_acceptance_rate = 0
+    mean_cost_vec = []; max_cost_vec = []
     for test_element in data:
         net_result = network.run(test_element[1])
         mean_cost_vec.append((sum(network.cost(net_result, test_element[0])) / len(test_element)) ** (1/2))
