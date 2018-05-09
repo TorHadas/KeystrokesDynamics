@@ -78,17 +78,19 @@ def get_data():
 
 def get_users(folder):
     users = []
+    passwords = []
     for file in os.listdir(folder):
         inserted = False
         file_path = "logs\\" + file
-        if(file_path == "logs\\passwords.txt"):
+        if(file_path == "logs\\passwords.txt" or file_path == "logs\\fake"):
             continue
         user = readfile(file_path)
         user = [user[0], user[1], []]
+        passwords.append(user[0])
         users.append(user)
     users = get_fake_users(folder + "fake", users)
-    users = [to_tuples(users[i]) for i in range(len(users))]
-    return to_tuples(users)
+    #users = [to_tuples(users[i]) for i in range(len(users))]
+    return users
 
 def get_fake_users(folder, users):
     for file in os.listdir(folder):
@@ -111,7 +113,7 @@ def to_tuples(user):
     data = []
     for i in range(2):
         for j in range(len(user[i + 1])):
-            data.append((i, users[i][j]))
+            data.append((i, user[i + 1][j]))
     return data
 
 #file_dir = "C:\\Users\\T8497069\\Desktop\\bloch 1.txt"

@@ -7,6 +7,8 @@ from NetworkClass import cost
 
 folder_dir = os.getcwd() + "\\logs"
 
+IMPOSTER = 1
+AUTHENTIC = 0
 # network constants
 DEFAULT_ITER_NUM = 150
 DAMP = 0.05
@@ -18,6 +20,7 @@ LAYER_SIZE = [
     2  # output - 11 users, 0 non-user (default)
 ]
 
+'''
 network = Network(DAMP, DEFAULT_ITER_NUM, NETWORK_SIZE, LAYER_SIZE)
 network.get_data(folder_dir)
 network.train()
@@ -25,7 +28,7 @@ network.save("test.json")
 net = Network(DAMP, DEFAULT_ITER_NUM, NETWORK_SIZE, LAYER_SIZE)
 net.load("test.json")
 net.run(Data.vec_to_data([71.7,128.1,120.1,95.8,96.1,-16.1,104.1,200,79.9,624.2,119.8,744.8,95.3,64.5,96.1]))
-
+'''
 
 def identification_decider(result):
     maximum = 0
@@ -37,52 +40,72 @@ def identification_decider(result):
     result_answer[index] = 1
     return result_answer
 
-def get_data(network, folder_data_dir):
-    orig_data = Data.create_multiple_members(folder_data_dir)
-    #orig_data = Data.get_fake_data()
-    answers = np.zeros((len(orig_data), LAYER_SIZE[network.L]))
-    inputs = []
-    new_data = []
-    for i in range(len(orig_data)):
-        answers[i][orig_data[i][0]] = 1
-        inputs.append(orig_data[i][1])
-        new_data.append([answers[i], inputs[-1]])
-    data = [answers, inputs]
-    return new_data
+def identify(result):
+    answer = np.zeros(len(result))
+    if(result[AUTHENTIC] > 0.8 and result[IMPOSTER] < 0.2):
+        answer[AUTHENTIC] = 1
+        return answer
+    answer[IMPOSTER] = 1
+    return answer
 
-
-def test(network, folder_data):
-    data = get_data(network, folder_data)
-    data = data[(int)(len(data) / 10) : len(data)]
-    imposter = 1; othentic = 0
-    true_identifications = 0; false_identification = 0
-    false_rejection_rate = 0; false_acceptance_rate = 0
-    mean_cost_vec = []; max_cost_vec = []
-    print(data)
-
-    for test_element in data:
-        net_result = network.run(test_element[1])
-        print(net_result)
-        mean_cost_vec.append((sum(cost(net_result, test_element[0])) / len(test_element)) ** (1/2))
-        max_cost_vec.append(max(cost(net_result, test_element[0])) ** (1/2))
-        net_decision = identification_decider(net_result)
-        if net_decision == test_element[0]:
-            true_identifications += 1
+def test_user(user):
+    password = user[0]
+    print("~ Starting user: " + password + " ~")
+    #get data
+    all_vectors = Data.to_tuples(user)
+    vectors = []
+    fake_vectors = []
+    for vec in all_vectors:
+        if(vec[0] == AUTHENTIC):
+            vectors.append(vec)
         else:
-            false_identification += 1
-            if test_element[0][othentic] == 1:
-                false_rejection_rate += 1
+            fake_vectors.append(vec)
+    train_data = vectors[0:int(len(vectors)/2)] + fake_vectors[0:int(len(fake_vectors)/2)]
+    test_data = vectors[int(len(vectors)/2):] + fake_vectors[int(len(fake_vectors)/2):]
+
+    #train network
+    network = Network(DAMP, DEFAULT_ITER_NUM, NETWORK_SIZE, LAYER_SIZE)
+    network.get_data(train_data)
+    network.train()
+    network.save("save\\"+password+".json")
+
+    count_authentic = 0
+    frr = 0 #False Rejection Rate (slightly bad)
+    far = 0 #False Acceptance Rate (very very bad)
+    mean_cost_vec = []
+    max_cost_vec = []
+
+    for test in test_data:
+        result, z = network.run(test[1])
+        answer = np.zeros(len(result))
+        answer[test[0]] = 1
+        #print(result)
+        #print(answer)
+        mean_cost_vec.append((sum(cost(result, answer)) / len(test)) ** (1/2))
+        max_cost_vec.append(max(cost(result, answer)) ** (1/2))
+        decision = identification_decider(result)
+
+        if(test[0] == AUTHENTIC):
+            if decision[AUTHENTIC]:
+                count_authentic += 1
             else:
-                false_acceptance_rate += 1
+                frr += 1
+        else:
+            if decision[AUTHENTIC]:
+                far += 1
 
     iter_vec = np.arange(len(mean_cost_vec))
     x_data = [iter_vec] * 2
     y_data = [mean_cost_vec, max_cost_vec]
-    plot(x_data, y_data, "sample num", "costs", "bla")
-    false_rejection_rate = false_rejection_rate / len(data)
-    false_acceptance_rate = false_acceptance_rate / len(data)
-    true_identifications_pct = true_identifications / len(data)
-    print("frr is: " + str(false_rejection_rate) +  " far is: " + str(false_acceptance_rate) +
-          " good: " + str(true_identifications_pct))
+    #plot(x_data, y_data, "sample num", "costs", "bla")
+    frr = frr / len(test_data)
+    far = far / len(test_data)
+    print(password + ":\tfrr = " + str(frr) +  "; far = " + str(far))
 
-test(network, folder_dir)
+def test():
+    users = Data.get_data()
+    for user in users:
+        test_user(user)
+    
+
+test()

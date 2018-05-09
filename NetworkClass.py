@@ -25,7 +25,7 @@ class Network():
                  network_size=2, layer_size=[18, 2, 11]):
         np.set_printoptions(precision=4)
         self.debug = Debug()
-        #self.debug.off()
+        self.debug.off()
         self.DAMP = damp
         self.DEFAULT_ITER_NUM = default_iter_num
         self.LAYER_SIZE = layer_size
@@ -55,6 +55,8 @@ class Network():
         self.bais = [np.array(b[i]) for i in range(len(b))]
     
     def run(self, sample):
+        if(len(sample) != len(self.nodes[0])):
+            print("ERROR - sample length does not match first layer size.\nSample: "+str(sample))
         self.nodes[0] = activation_func(sample)
         #self.nodes[0] = sample
         z = list(self.nodes)
@@ -63,14 +65,12 @@ class Network():
             self.nodes[i] = activation_func(z[i])
         return self.nodes[self.L], z
 
-    def get_data(self, folder_data_dir):
-        orig_data = Data.create_multiple_members(folder_data_dir)
-        #orig_data = Data.get_fake_data()
-        self.answers = np.zeros((len(orig_data), self.LAYER_SIZE[self.L]))
+    def get_data(self, data):
+        self.answers = np.zeros((len(data), self.LAYER_SIZE[self.L]))
         self.inputs = []
-        for i in range(len(orig_data)):
-            self.answers[i][orig_data[i][0]] = 1
-            self.inputs.append(orig_data[i][1])
+        for i in range(len(data)):
+            self.answers[i][data[i][0]] = 1
+            self.inputs.append(data[i][1])
         self.data = [self.answers, self.inputs]
 
 
@@ -183,8 +183,8 @@ class Network():
         iter_vec = []
         for i in range(len(eff_cost_vec)):
             iter_vec.append(np.arange(len(eff_cost_vec[i])))
-        simplePlot(iter_vec, eff_cost_vec, self.DAMP)
-        simplePlot(iter_vec, wrong_vec, self.DAMP)
+        #simplePlot(iter_vec, eff_cost_vec, self.DAMP)
+        #simplePlot(iter_vec, wrong_vec, self.DAMP)
         # endregion
 
         return self.weights, self.bias, self.LAYER_SIZE
