@@ -4,14 +4,15 @@ import Data
 import numpy as np
 from plotResults import plot
 from NetworkClass import cost
+from NetworkClass import activation_func
 
 folder_dir = os.getcwd() + "\\logs"
 
 IMPOSTER = 1
 AUTHENTIC = 0
 # network constants
-DEFAULT_ITER_NUM = 150
-DAMP = 0.05
+DEFAULT_ITER_NUM = 300
+DAMP = 0.01
 NETWORK_SIZE = 2
 LAYER_SIZE = [
     18,  # input
@@ -19,6 +20,7 @@ LAYER_SIZE = [
     8,  # hidden
     2  # output - 11 users, 0 non-user (default)
 ]
+#print(activation_func(np.array([78.6,80.9,62.5,99.4,102,-18.4,91.8,357.9,93.2,51,103.4,23.2,112.9,-1.2,85.1])))
 
 '''
 network = Network(DAMP, DEFAULT_ITER_NUM, NETWORK_SIZE, LAYER_SIZE)
@@ -51,6 +53,7 @@ def identify(result):
 def test_user(user):
     password = user[0]
     print("~ Starting user: " + password + " ~")
+
     #get data
     all_vectors = Data.to_tuples(user)
     vectors = []

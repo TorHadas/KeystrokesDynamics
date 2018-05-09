@@ -14,9 +14,10 @@ def activation_func(x, derivative=False):
 
 
 def cost(net_result, answer, derivative=False):
+    POWER = 2;
     if derivative:
-        return 2 * (net_result - answer)
-    return np.abs(np.power(net_result - answer, 2))
+        return POWER * np.power(net_result - answer, POWER - 1)
+    return np.abs(np.power(net_result - answer, POWER))
 
 
 class Network():
@@ -128,8 +129,8 @@ class Network():
                 a, z = self.run(sample)
 
 
-                ef_cost += cost(self.nodes[self.L], answer) / len(inputs)
-                max_cost = np.array([max(m, curr) for m, curr in zip(max_cost, cost(self.nodes[self.L], answer))])
+                ef_cost += np.abs(self.nodes[self.L] - answer) / len(inputs)
+                max_cost = np.array([max(m, curr) for m, curr in zip(max_cost, np.abs(self.nodes[self.L] - answer))])
 
                 #LEARN
 
@@ -156,10 +157,10 @@ class Network():
                         #      " adding cost to place " + str(i) + " " + str(iter))
                         if (iter == 0):
                             samples_same_ans[i] += 1
-                        eff_cost_vec[i][iter] += ((sum(cost(self.nodes[self.L], answer)) / self.LAYER_SIZE[self.L]) ** (1 / 2))
+                        eff_cost_vec[i][iter] += ((sum(np.abs(self.nodes[self.L] - answer)) / self.LAYER_SIZE[self.L]) ** (1 / 2))
                         
-                        if(max_cost_vec[i][iter] < sum(cost(self.nodes[self.L], answer))):
-                            max_cost_vec[i][iter] = sum(cost(self.nodes[self.L], answer))
+                        if(max_cost_vec[i][iter] < sum(np.abs(self.nodes[self.L] - answer))):
+                            max_cost_vec[i][iter] = sum(np.abs(self.nodes[self.L] - answer))
                             max_vec[i][iter] = self.nodes[self.L]
 
                         if(sum(cost(self.nodes[self.L], answer)) > 0.1):
@@ -183,8 +184,8 @@ class Network():
         iter_vec = []
         for i in range(len(eff_cost_vec)):
             iter_vec.append(np.arange(len(eff_cost_vec[i])))
-        #simplePlot(iter_vec, eff_cost_vec, self.DAMP)
-        #simplePlot(iter_vec, wrong_vec, self.DAMP)
+        simplePlot(iter_vec, eff_cost_vec, self.DAMP)
+        simplePlot(iter_vec, wrong_vec, self.DAMP)
         # endregion
 
         return self.weights, self.bias, self.LAYER_SIZE

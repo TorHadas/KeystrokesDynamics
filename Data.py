@@ -57,6 +57,9 @@ def readfile(filename):
             if (line is '\n'):
                 continue
             vec = line.split("\n")[0].split(",")
+            if(len(vec) < 15):
+                print("OMG")
+                print(filename)
             vectors.append(normalize(vec))
     return [password, vectors]
 
