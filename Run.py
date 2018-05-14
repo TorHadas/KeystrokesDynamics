@@ -1,10 +1,10 @@
-from NetworkClass import Network
+from SimpleNetwork import Network
 import os
 import Data
 import numpy as np
 from plotResults import plot
-from NetworkClass import cost
-from NetworkClass import activation_func
+from SimpleNetwork import cost
+from SimpleNetwork import activation_func
 
 folder_dir = os.getcwd() + "\\logs"
 
@@ -12,7 +12,7 @@ IMPOSTER = 1
 AUTHENTIC = 0
 # network constants
 DEFAULT_ITER_NUM = 300
-DAMP = 0.01
+DAMP = 0.1
 NETWORK_SIZE = 2
 LAYER_SIZE = [
     18,  # input

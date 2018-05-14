@@ -60,6 +60,7 @@ def readfile(filename):
             if(len(vec) < 15):
                 print("OMG")
                 print(filename)
+                continue
             vectors.append(normalize(vec))
     return [password, vectors]
 

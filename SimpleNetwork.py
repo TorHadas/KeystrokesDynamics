@@ -19,11 +19,15 @@ def cost(net_result, answer, derivative=False):
         return POWER * np.power(net_result - answer, POWER - 1)
     return np.abs(np.power(net_result - answer, POWER))
 
+def identify(result):
+    if(result > 0.8):
+        return 1
+    return 0
 
 class Network():
     # INITIALIZE NEW NETWORK
     def __init__(self, damp=0.0001, default_iter_num=10,
-                 network_size=2, layer_size=[18, 2, 11]):
+                 network_size=2, layer_size=[18, 1]):
         np.set_printoptions(precision=4)
         self.debug = Debug()
         self.debug.off()
@@ -32,6 +36,7 @@ class Network():
         self.LAYER_SIZE = layer_size
         self.NETWORK_SIZE = network_size
         self.L = network_size - 1
+        self.OUTPUT_SIZE = 1
         self.nodes = [np.zeros(self.LAYER_SIZE[i]) for i in range(self.L + 1)]
         self.weights = [0.01 * (np.random.rand(self.LAYER_SIZE[i + 1], self.LAYER_SIZE[i]) - 0.5) for i in range(self.L)]
         self.bias    = [0.01 * (np.random.rand(self.LAYER_SIZE[i + 1]) - 0.5) for i in range(self.L)]
@@ -67,17 +72,27 @@ class Network():
         return self.nodes[self.L], z
 
     def get_data(self, data):
-        self.answers = np.zeros((len(data), self.LAYER_SIZE[self.L]))
+        self.answers = np.zeros(len(data))
         self.inputs = []
         for i in range(len(data)):
-            if(data[i][0] < self.LAYER_SIZE[self.L]):
-                self.answers[i][data[i][0]] = 1
+            self.answers[i] = 1 - data[i][0]
             self.inputs.append(data[i][1])
         self.data = [self.answers, self.inputs]
 
-
+    def cal_samples(self, answers):
+        samples_same_ans = [0, 0]
+        for j in range(len(answers)):
+            answer = np.array(answers[j])
+            samples_same_ans[1 - int(answer)] += 1
+        return samples_same_ans
 
     def train(self, iter_num=None, test_data=None):
+        testing = not test_data is None
+
+        if testing:
+            test_inputs = [test_data[j][1] for j in range(len(test_data))]
+            test_answers = [1 - test_data[j][0]  for j in range(len(test_data))]
+
         if(iter_num == None):
             iter_num = self.DEFAULT_ITER_NUM
         # region: setting variables to be the same as the class variables
@@ -96,42 +111,27 @@ class Network():
         #endregion
 
         # region: setting plot cost vectors
-        eff_cost_vec = []
-        for i in range(self.LAYER_SIZE[self.L]):
-            eff_cost_vec.append([0] * iter_num)
-        samples_same_ans = [0] * self.LAYER_SIZE[self.L]
+        eff_cost_vec = [[0] * iter_num for i in range(self.LAYER_SIZE[self.L] + 1)]
+        test_cost_vec = list(eff_cost_vec)
+        wrong_vec = [0] * iter_num
 
-        max_cost_vec = []
-        for i in range(self.LAYER_SIZE[self.L]):
-            max_cost_vec.append([0] * iter_num)
+        samples_same_ans = self.cal_samples(self.answers)
+        tests_same_ans = self.cal_samples(test_answers)
 
-        max_vec = []
-        for i in range(self.LAYER_SIZE[self.L]):
-            max_vec.append([0 for i in range(self.LAYER_SIZE[self.L])] * iter_num)
-
-        wrong_vec = []
-        for i in range(self.LAYER_SIZE[self.L]):
-            wrong_vec.append([0] * iter_num)
+        
         # endregion
 
         for iter in range(iter_num):
-            ef_cost = np.zeros(self.LAYER_SIZE[self.L])
-            max_cost = np.zeros(self.LAYER_SIZE[self.L])
-            
             combined = list(zip(self.inputs, self.answers))
             random.shuffle(combined)
             inputs, answers = zip(*combined)
 
             for j in range(len(inputs)):
                 sample = np.array(inputs[j])
-                answer = np.array(answers[j])
+                answer = answers[j]
 
                 #CALCULATE NODES
                 a, z = self.run(sample)
-
-
-                ef_cost += np.abs(self.nodes[self.L] - answer) / len(inputs)
-                max_cost = np.array([max(m, curr) for m, curr in zip(max_cost, np.abs(self.nodes[self.L] - answer))])
 
                 #LEARN
 
@@ -150,22 +150,17 @@ class Network():
                 total_delta_weights = [np.nan_to_num(tdw + dw) for tdw, dw in zip(total_delta_weights, delta_weights)]
                 total_delta_bias    = [np.nan_to_num(tdb + db) for tdb, db in zip(total_delta_bias, delta_bias)]
 
-                # region: create vector of results to plot
-                for i in range(len(answer)):
-                    if (answer[i] == 1):
-                        # self.debug.log("in input j: " + str(j) + " the answer is " + str(
-                        #    answer) + " the net answer is " + str(self.nodes[self.L]) +
-                        #      " adding cost to place " + str(i) + " " + str(iter))
-                        if (iter == 0):
-                            samples_same_ans[i] += 1
-                        eff_cost_vec[i][iter] += ((sum(np.abs(self.nodes[self.L] - answer)) / self.LAYER_SIZE[self.L]) ** (1 / 2))
-                        
-                        if(max_cost_vec[i][iter] < sum(np.abs(self.nodes[self.L] - answer))):
-                            max_cost_vec[i][iter] = sum(np.abs(self.nodes[self.L] - answer))
-                            max_vec[i][iter] = self.nodes[self.L]
+                eff_cost_vec[1-int(answer)][iter] += sum(np.abs(self.nodes[self.L] - answer))
+                if(identify(self.nodes[self.L]) == answer):
+                    wrong_vec[iter] += 1
 
-                        if(sum(cost(self.nodes[self.L], answer)) > 0.1):
-                            wrong_vec[i][iter] += 1
+            for j in range(len(test_inputs)):
+                sample = np.array(test_inputs[j])
+                answer = test_answers[j]
+                a, z = self.run(sample)
+                test_cost_vec[1-int(answer)][iter] += sum(np.abs(self.nodes[self.L] - answer))
+                if(identify(self.nodes[self.L]) == answer):
+                    wrong_vec[iter] += 1
                 # endregion
 
             self.weights = [np.nan_to_num(w - self.DAMP * dw / len(inputs)) for w, dw in zip(self.weights, total_delta_weights)]
@@ -178,15 +173,20 @@ class Network():
             for i in range(len(eff_cost_vec)):
                 eff_cost_vec[i][iter] = eff_cost_vec[i][iter] / samples_same_ans[i]
                 # endregion
-            self.debug.log(max_cost_vec[0][iter])
-            self.debug.log("i=0, max="+str(max_vec[0][iter]))
-
         # region: plot graphs
         iter_vec = []
         for i in range(len(eff_cost_vec)):
             iter_vec.append(np.arange(len(eff_cost_vec[i])))
-        simplePlot(iter_vec, eff_cost_vec, self.DAMP)
-        simplePlot(iter_vec, wrong_vec, self.DAMP)
+
+        if testing:
+            y = np.array(eff_cost_vec[0])
+            y2 = np.array(eff_cost_vec[1])
+            y3 = np.array(wrong_vec)
+            plot3(iter_vec[0], y, y2, y3, "Iterations", "Cost", str(self.DAMP))
+            y = np.array(test_cost_vec[0])
+            y2 = np.array(test_cost_vec[1])
+            
+            plot3(iter_vec[0], y, y2, y3, "Iterations", "Cost", str(self.DAMP))
         # endregion
 
         return self.weights, self.bias, self.LAYER_SIZE
