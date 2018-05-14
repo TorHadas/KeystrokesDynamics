@@ -16,7 +16,7 @@ DAMP = 0.01
 NETWORK_SIZE = 2
 LAYER_SIZE = [
     18,  # input
-    2,  # hidden
+    1,  # hidden
     8,  # hidden
     2  # output - 11 users, 0 non-user (default)
 ]
@@ -65,11 +65,10 @@ def test_user(user):
             fake_vectors.append(vec)
     train_data = vectors[0:int(len(vectors)/2)] + fake_vectors[0:int(len(fake_vectors)/2)]
     test_data = vectors[int(len(vectors)/2):] + fake_vectors[int(len(fake_vectors)/2):]
-
     #train network
     network = Network(DAMP, DEFAULT_ITER_NUM, NETWORK_SIZE, LAYER_SIZE)
     network.get_data(train_data)
-    network.train()
+    network.train(test_data=test_data)
     network.save("save\\"+password+".json")
 
     count_authentic = 0
@@ -81,7 +80,8 @@ def test_user(user):
     for test in test_data:
         result, z = network.run(test[1])
         answer = np.zeros(len(result))
-        answer[test[0]] = 1
+        if(test[0] < LAYER_SIZE[1]):
+            answer[test[0]] = 1
         #print(result)
         #print(answer)
         mean_cost_vec.append((sum(cost(result, answer)) / len(test)) ** (1/2))

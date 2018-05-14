@@ -89,6 +89,12 @@ def get_users(folder):
             continue
         user = readfile(file_path)
         user = [user[0], user[1], []]
+        if(user[0] in passwords):
+            for i in range(len(users)):
+                if(user[0] == users[i]):
+                    users[i][2] += user[1]
+                    break
+            continue
         passwords.append(user[0])
         users.append(user)
     users = get_fake_users(folder + "fake", users)
