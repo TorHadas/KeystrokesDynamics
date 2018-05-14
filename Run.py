@@ -43,12 +43,9 @@ def identification_decider(result):
     return result_answer
 
 def identify(result):
-    answer = np.zeros(len(result))
-    if(result[AUTHENTIC] > 0.8 and result[IMPOSTER] < 0.2):
-        answer[AUTHENTIC] = 1
-        return answer
-    answer[IMPOSTER] = 1
-    return answer
+    if(result > 0.8):
+        return 1
+    return 0
 
 def test_user(user):
     password = user[0]

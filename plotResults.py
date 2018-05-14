@@ -5,17 +5,19 @@ import datetime as dt
 import os
 import numpy as np
 #MPLCONFIGDIR=/tmp/some_pathN python plotResults.py
-def plot3(x_total_data, y_total_data, y2, y3, x_label, y_label, figure_description):
+def plot3(x, y, y2, y3, x_label, y_label, figure_description):
     time = str(dt.datetime.now().day) + "  " + str(dt.datetime.now().hour) + " " + str(dt.datetime.now().minute)
     colors = ["r", "g", "b", "y", "k", "m", "c"]
     fig = plt.gcf()
     fig.canvas.set_window_title(figure_description)
     patches = []
-    plt.plot(x_total_data[0], y_total_data[0], "r")
-    plt.plot(x_total_data[0], y2, "g")
-    plt.plot(x_total_data[0], y3, "b")
+    plt.plot(x, y, "r")
+    plt.plot(x, y2, "g")
+    plt.plot(x, y3, "b")
     patch = mpatches.Patch(color="r", label='train cost')
+    patches.append(patch)
     patch = mpatches.Patch(color="g", label='test cost')
+    patches.append(patch)
     patch = mpatches.Patch(color="b", label='correct')
     patches.append(patch)
     plt.legend(handles=patches)
